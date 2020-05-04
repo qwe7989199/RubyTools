@@ -1,4 +1,4 @@
-script_name = tr"Get Ruby"
+script_name = "Get Ruby"
 script_description = "Generate furigana formatted lyrics by Yahoo's API"
 script_author = "domo"
 script_version = "1.0"
