@@ -68,6 +68,8 @@ function xml2LineText(xmlStr,lineNum)
 				for i=1,#subTbl do
 					if subTbl[i].Surface~=subTbl[i].Furigana then
 						lineText = lineText.."##"..subTbl[i].Surface.."|"..subTbl[i].Furigana.."##"
+					else
+						lineText = lineText..subTbl[i].Surface					
 					end
 				end
 			else
