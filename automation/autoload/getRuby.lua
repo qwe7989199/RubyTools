@@ -59,7 +59,7 @@ function xml2LineText(xmlStr,lineNum)
 	parser:parse(xmlStr)
 	lineText = ""
 	if xmlHandler.root.Error then
-		aegisub.debug.out("Line "..tostring(lineNum).."returns an error："..xmlHandler.root.Error.Message.."\n")
+		aegisub.debug.out("Line "..tostring(lineNum).." returns an error："..xmlHandler.root.Error.Message.."\n")
 	else
 		wordTbl = xmlHandler.root.ResultSet.Result.WordList.Word
 		if wordTbl.Furigana then
