@@ -7,7 +7,6 @@ script_version = "1.0"
 require "karaskel"
 local request = require("luajit-request")
 local ffi = require"ffi"
-
 meta = nil;
 styles = nil;
 
@@ -27,6 +26,7 @@ function oneClickRuby(subtitles, selected_lines)
 		lineNum = tostring(selected_lines[i]-dialogue_start)
 		l = subtitles[selected_lines[i]]
 		text = l.text
+		-- if string.len()
 		l.comment = true
 		subtitles[selected_lines[i]] = l
 		aegisub.progress.task("Requesting for line: "..lineNum)
@@ -55,8 +55,8 @@ function send2Yahoo(sentence,appid,grade)
 		method = "POST",
 		headers = {['content-type'] = "application/x-www-form-urlencoded"},
 		data = {["appid"] = appid,
-			["sentence"] = sentence,
-			["grade"] = grade }
+				["sentence"] = sentence,
+				["grade"] = grade }
 				})
 	if (not result) then aegisub.debug.out(err, message) end
 	return result.body
@@ -180,6 +180,8 @@ function processline(subs,line,li)
 			fl.effect = "furi-fx"
 			subs.append(fl);
 		end
+	else
+	subs.append(originline)
 	end
 end
 
