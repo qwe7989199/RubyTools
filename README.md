@@ -5,11 +5,8 @@ Generate and add ruby in Aegisub.
 - Clone this repository.  
 - Unzip all the files to the root folder of Aegisub.  
 - Start your Aegisub and check the automation menu.  
-  - Run "Get Ruby" for selected lines.  
-  - Run "Generate Ruby(Non Karaoke)" for selected lines.  
+  - Run "One Click Ruby" for selected lines.  
   
-  
-
 ## Requirements(Included)    
  - luajit-request  
   https://github.com/LPGhatguy/luajit-request   
