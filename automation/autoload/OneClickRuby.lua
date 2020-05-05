@@ -4,8 +4,12 @@ script_author = "domo"
 ruby_part_from = "Kage Maboroshi&KiNen"
 script_version = "1.0"
 
+require "karaskel"
 local request = require("luajit-request")
 local ffi = require"ffi"
+
+meta = nil;
+styles = nil;
 
 function oneClickRuby(subtitles, selected_lines)
 	local grade = "1" --1~6 correspond to Japan primary school student grade, 7 for middle school and 8 for normal people.
@@ -41,6 +45,7 @@ function oneClickRuby(subtitles, selected_lines)
 		aegisub.progress.set(i/#selected_lines*100)
 	end
 		Ruby(subtitles, newLineTbl)
+		-- uncomment this if you have the demand to use the raw format
 		-- subtitles.append(table.unpack(newLineTbl))
 end
 
@@ -50,8 +55,8 @@ function send2Yahoo(sentence,appid,grade)
 		method = "POST",
 		headers = {['content-type'] = "application/x-www-form-urlencoded"},
 		data = {["appid"] = appid,
-				["sentence"] = sentence,
-				["grade"] = grade }
+			["sentence"] = sentence,
+			["grade"] = grade }
 				})
 	if (not result) then aegisub.debug.out(err, message) end
 	return result.body
@@ -104,10 +109,6 @@ function xml2LineText(xmlStr,lineNum)
 	return lineText
 end
 
-require "karaskel"
-
-script_description2 = "Generate ruby based on the split chars"
-
 function parse_templates(meta, styles, subs)
 	local i = 1
 	while i <= #subs do
@@ -122,9 +123,6 @@ function parse_templates(meta, styles, subs)
 	end
 	aegisub.progress.set(100)
 end
-
-meta = nil;
-styles = nil;
 
 function Ruby(subs, sel)
 	--參數設定--
