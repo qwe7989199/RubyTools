@@ -1,5 +1,6 @@
 # RubyTools
 Generate and add ruby in Aegisub.   
+With karaoke support.
 
 ## Usage  
 - Clone this repository.  
