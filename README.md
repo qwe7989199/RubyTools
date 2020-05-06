@@ -13,3 +13,5 @@ With karaoke support.
   https://github.com/LPGhatguy/luajit-request   
  - xml2lua  
   https://github.com/manoelcampos/xml2lua
+ - utf8.lua  
+  https://github.com/Stepets/utf8.lua
