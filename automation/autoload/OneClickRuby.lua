@@ -7,8 +7,19 @@ script_version = "1.0"
 require "karaskel"
 local request = require("luajit-request")
 local ffi = require"ffi"
+local utf8 = require"utf8"
+
 meta = nil;
 styles = nil;
+--參數設定--
+rubypadding = 0 --小字間距
+rubyscale = 0.5 --小字縮放比例
+
+--分隔符设定
+char_s = "##"
+char_m = "|<"
+char_e = "##"
+
 
 function oneClickRuby(subtitles, selected_lines)
 	local grade = "1" --1~6 correspond to Japan primary school student grade, 7 for middle school and 8 for normal people.
@@ -26,14 +37,30 @@ function oneClickRuby(subtitles, selected_lines)
 		lineNum = tostring(selected_lines[i]-dialogue_start)
 		l = subtitles[selected_lines[i]]
 		text = l.text
-		-- if string.len()
 		l.comment = true
 		subtitles[selected_lines[i]] = l
-		aegisub.progress.task("Requesting for line: "..lineNum)
-		result = send2Yahoo(text,appid,grade)
-		aegisub.progress.task("Parsing for line: "..lineNum)
-		newText = xml2LineText(result,lineNum)
-		l.effect = "ruby"
+		if string.find(text,"{\\[kK]%d+}") then
+			aegisub.debug.out("Process line "..lineNum.." as a karaoke line.\n")
+			lineKara = {}
+			for kDur,sylText in string.gmatch(text,"{\\k(%d+)}([^{]+)") do
+				lineKara[#lineKara+1] = {sylText=sylText,kDur=kDur}
+			end
+			text = text:gsub("{[^}]+}", "")
+			aegisub.progress.task("Requesting for line: "..lineNum)
+			result = send2Yahoo(text,appid,grade)
+			aegisub.progress.task("Parsing for line: "..lineNum)
+			newText = xml2LineText(result,lineNum)
+			-- aegisub.debug.out(newText)
+			newText = xml2KaraText(newText,lineKara)
+			l.effect = "karaoke"
+		else
+			aegisub.progress.task("Requesting for line: "..lineNum)
+			result = send2Yahoo(text,appid,grade)
+			aegisub.progress.task("Parsing for line: "..lineNum)
+			newText = xml2LineText(result,lineNum)
+			l.effect = "ruby"
+		end
+		-- newText = xml2KaraLineText(result,line_table or key_value,lineNum)
 		aegisub.progress.task("Writing for line: "..lineNum)
 		if newText ~= "" then
 			l.text = newText
@@ -44,9 +71,10 @@ function oneClickRuby(subtitles, selected_lines)
 		newLineTbl[#newLineTbl+1] = l
 		aegisub.progress.set(i/#selected_lines*100)
 	end
-		Ruby(subtitles, newLineTbl)
-		-- uncomment this if you have the demand to use the raw format
-		-- subtitles.append(table.unpack(newLineTbl))
+	-- uncomment this if you have the demand to use the raw format
+	-- subtitles.append(table.unpack(newLineTbl))
+	Ruby(subtitles, newLineTbl)
+	aegisub.debug.out("Done.")
 end
 
 function send2Yahoo(sentence,appid,grade)
@@ -77,13 +105,13 @@ function xml2LineText(xmlStr,lineNum)
 				subTbl = wordTbl.SubWordList.SubWord
 				for i=1,#subTbl do
 					if subTbl[i].Surface~=subTbl[i].Furigana then
-						lineText = lineText.."##"..subTbl[i].Surface.."|"..subTbl[i].Furigana.."##"
+						lineText = lineText..char_s..subTbl[i].Surface..char_m..subTbl[i].Furigana..char_e
 					else
 						lineText = lineText..subTbl[i].Surface
 					end
 				end
 			else
-				lineText = lineText.."##"..wordTbl.Surface.."|"..wordTbl.Furigana.."##"
+				lineText = lineText..char_s..wordTbl.Surface..char_m..wordTbl.Furigana..char_e
 			end
 		else
 			for i=1,#wordTbl do
@@ -92,13 +120,13 @@ function xml2LineText(xmlStr,lineNum)
 						subTbl = wordTbl[i].SubWordList.SubWord
 						for i=1,#subTbl do
 							if subTbl[i].Surface~=subTbl[i].Furigana then
-								lineText = lineText.."##"..subTbl[i].Surface.."|"..subTbl[i].Furigana.."##"
+								lineText = lineText..char_s..subTbl[i].Surface..char_m..subTbl[i].Furigana..char_e
 							else
 								lineText = lineText..subTbl[i].Surface
 							end
 						end
 					else
-						lineText = lineText.."##"..wordTbl[i].Surface.."|"..wordTbl[i].Furigana.."##"
+						lineText = lineText..char_s..wordTbl[i].Surface..char_m..wordTbl[i].Furigana..char_e
 					end
 				else
 					lineText = lineText..wordTbl[i].Surface
@@ -107,6 +135,66 @@ function xml2LineText(xmlStr,lineNum)
 		end
 	end
 	return lineText
+end
+
+
+function xml2KaraText(newText,lineKara)
+	rubyTbl = deleteEmpty(Split(newText,char_s))
+	print(#lineKara)
+	newRubyTbl = {}
+	for i=1,#rubyTbl do
+		if string.find(rubyTbl[i],"|<") then
+			newRubyTbl[#newRubyTbl+1] = rubyTbl[i]
+		else 
+			for j=1,utf8.len(rubyTbl[i]) do
+				newRubyTbl[#newRubyTbl+1] = utf8.sub(rubyTbl[i],j,j)
+			end
+		end
+	end
+
+	tmpSylText = ""
+	tmpSylKDur = 0
+	i = 1
+	newKaraText = ""
+	while i<=#lineKara do
+		tmpSylText = tmpSylText..lineKara[i].sylText
+		tmpSylKDur = tmpSylKDur + lineKara[i].kDur
+		table.remove(lineKara,1)
+		-- print(tmpSylText, Y.table.tostring(newRubyTbl)..'\n\n')
+		if tmpSylText == utf8.match(newRubyTbl[1],"[^|<]*") then
+			newKaraText = newKaraText..string.format("{\\k%d}%s",tmpSylKDur,newRubyTbl[1])
+			table.remove(newRubyTbl,1)
+			tmpSylText = ""
+			tmpSylKDur = 0
+		end
+	end
+	return newKaraText
+end
+
+function deleteEmpty(tbl)
+	for i=#tbl,1,-1 do
+		if tbl[i] == "" then
+		table.remove(tbl, i)
+		end
+	end
+	return tbl
+end
+
+function Split(szFullString, szSeparator)
+	local nFindStartIndex = 1
+	local nSplitIndex = 1
+	local nSplitArray = {}   
+	while true do
+		local nFindLastIndex = string.find(szFullString, szSeparator, nFindStartIndex)      
+		if not nFindLastIndex then
+			nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, string.len(szFullString))
+			break      
+		end
+		nSplitArray[nSplitIndex] = string.sub(szFullString, nFindStartIndex, nFindLastIndex - 1)
+		nFindStartIndex = nFindLastIndex + string.len(szSeparator)
+		nSplitIndex = nSplitIndex + 1
+	end
+return nSplitArray
 end
 
 function parse_templates(meta, styles, subs)
@@ -125,14 +213,6 @@ function parse_templates(meta, styles, subs)
 end
 
 function Ruby(subs, sel)
-	--參數設定--
-	rubypadding = 0 --小字間距
-	rubyscale = 0.5 --小字縮放比例
-
-	--分隔符设定
-	char_s = "##"
-	char_m= "|"
-	char_e= "##"
 	meta, styles = karaskel.collect_head(subs);
 	for i=1,#sel do
 		processline(subs,sel[i],i);
