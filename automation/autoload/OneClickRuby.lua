@@ -36,22 +36,25 @@ function oneClickRuby(subtitles, selected_lines)
 	for i=1,#selected_lines do
 		lineNum = tostring(selected_lines[i]-dialogue_start)
 		l = subtitles[selected_lines[i]]
-		text = l.text
+		orgText = l.text			
 		l.comment = true
 		subtitles[selected_lines[i]] = l
-		if string.find(text,"{\\[kK]%d+}") then
+		text = orgText:gsub("{[^}]+}", "")
+		if string.find(orgText,"{\\[kK]%d+}") then
 			aegisub.debug.out("Process line "..lineNum.." as a karaoke line.\n")
 			lineKara = {}
-			for kDur,sylText in string.gmatch(text,"{\\k(%d+)}([^{]+)") do
+			for kDur,sylText in string.gmatch(orgText,"{\\k(%d+)}([^{]+)") do
 				lineKara[#lineKara+1] = {sylText=sylText,kDur=kDur}
 			end
-			text = text:gsub("{[^}]+}", "")
 			aegisub.progress.task("Requesting for line: "..lineNum)
 			result = send2Yahoo(text,appid,grade)
 			aegisub.progress.task("Parsing for line: "..lineNum)
 			newText = xml2LineText(result,lineNum)
-			-- aegisub.debug.out(newText)
-			newText = xml2KaraText(newText,lineKara)
+			if type(newText)=="string" and newText~="" then
+				newText = xml2KaraText(newText,lineKara)
+			else
+				newText = orgText
+			end
 			l.effect = "karaoke"
 		else
 			aegisub.progress.task("Requesting for line: "..lineNum)
