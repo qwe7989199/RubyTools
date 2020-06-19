@@ -56,6 +56,9 @@ function oneClickRuby(subtitles, selected_lines)
 				newText = orgText
 			end
 			l.effect = "karaoke"
+		elseif string.find(text,char_m) then
+			newText = text
+			l.effect = "ruby"
 		else
 			aegisub.progress.task("Requesting for line: "..lineNum)
 			result = send2Yahoo(text,appid,grade)
@@ -143,10 +146,9 @@ end
 
 function xml2KaraText(newText,lineKara)
 	rubyTbl = deleteEmpty(Split(newText,char_s))
-	print(#lineKara)
 	newRubyTbl = {}
 	for i=1,#rubyTbl do
-		if string.find(rubyTbl[i],"|<") then
+		if string.find(rubyTbl[i],char_m) then
 			newRubyTbl[#newRubyTbl+1] = rubyTbl[i]
 		else 
 			for j=1,utf8.len(rubyTbl[i]) do
@@ -163,7 +165,7 @@ function xml2KaraText(newText,lineKara)
 		tmpSylText = tmpSylText..lineKara[i].sylText
 		tmpSylKDur = tmpSylKDur + lineKara[i].kDur
 		table.remove(lineKara,1)
-		-- print(tmpSylText, Y.table.tostring(newRubyTbl)..'\n\n')
+		-- aegisub.debug.out(Y.table.tostring(newRubyTbl)..'\n\n')
 		if tmpSylText == utf8.match(newRubyTbl[1],"[^|<]*") then
 			newKaraText = newKaraText..string.format("{\\k%d}%s",tmpSylKDur,newRubyTbl[1])
 			table.remove(newRubyTbl,1)
