@@ -12,11 +12,11 @@ local utf8 = require"utf8"
 -- local tts = Y.table.tostring
 meta = nil;
 styles = nil;
---參數設定--
-rubypadding = 0 --小字間距
-rubyscale = 0.5 --小字縮放比例
+-- parameters --
+rubypadding = 0 --ruby spacing
+rubyscale = 0.5 --ruby size
 
---分隔符设定，不要修改
+--spliter setting, DO NOT CHANGE
 char_s = "##"
 char_m = "|<"
 char_e = "##"
