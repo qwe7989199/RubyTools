@@ -2,24 +2,24 @@ script_name = "One Click Ruby"
 script_description = "Get the formatted lyrics by Yahoo's API and ruby them"
 script_author = "domo"
 ruby_part_from = "Kage Maboroshi&KiNen"
-script_version = "1.0"
+script_version = "1.01"
 
 require "karaskel"
 local request = require("luajit-request")
 local ffi = require"ffi"
 local utf8 = require"utf8"
-
+-- local Y = require"Yutils"
+-- local tts = Y.table.tostring
 meta = nil;
 styles = nil;
 --參數設定--
 rubypadding = 0 --小字間距
 rubyscale = 0.5 --小字縮放比例
 
---分隔符设定
+--分隔符设定，不要修改
 char_s = "##"
 char_m = "|<"
 char_e = "##"
-
 
 function oneClickRuby(subtitles, selected_lines)
 	local grade = "1" --1~6 correspond to Japan primary school student grade, 7 for middle school and 8 for normal people.
@@ -71,7 +71,7 @@ function oneClickRuby(subtitles, selected_lines)
 		if newText ~= "" then
 			l.text = newText
 		else
-			l.text = text
+			l.text = orgText
 		end
 		l.comment = false
 		newLineTbl[#newLineTbl+1] = l
@@ -156,7 +156,19 @@ function xml2KaraText(newText,lineKara)
 			end
 		end
 	end
-
+	-- aegisub.debug.out(tts(newRubyTbl).."\n")
+	sylNum = #lineKara
+	for i=#newRubyTbl,2,-1 do
+		realWord = string.match(newRubyTbl[i],"([^|<]+)[<|]?")
+		if utf8.len(realWord)<utf8.len(lineKara[sylNum].sylText) then
+			newRubyTbl[i-1] = newRubyTbl[i-1]..newRubyTbl[i]
+			table.remove(newRubyTbl,i)
+			-- aegisub.debug.out(realWord.."|"..lineKara[sylNum].sylText.."\n")
+		else
+			sylNum = sylNum - 1
+		end
+	end
+	-- aegisub.debug.out(tts(newRubyTbl)..'\n')
 	tmpSylText = ""
 	tmpSylKDur = 0
 	i = 1
@@ -165,13 +177,15 @@ function xml2KaraText(newText,lineKara)
 		tmpSylText = tmpSylText..lineKara[i].sylText
 		tmpSylKDur = tmpSylKDur + lineKara[i].kDur
 		table.remove(lineKara,1)
-		-- aegisub.debug.out(Y.table.tostring(newRubyTbl)..'\n\n')
-		if tmpSylText == utf8.match(newRubyTbl[1],"[^|<]*") then
-			newKaraText = newKaraText..string.format("{\\k%d}%s",tmpSylKDur,newRubyTbl[1])
-			table.remove(newRubyTbl,1)
+		realWord = string.match(newRubyTbl[i],"([^|<]+)[<|]?")
+		-- aegisub.debug.out('\n'..tostring(tmpSylKDur)..tmpSylText.."    "..realWord)
+		if tmpSylText == realWord then
+			newKaraText = newKaraText..string.format("{\\k%d}%s",tmpSylKDur,newRubyTbl[i])
+			table.remove(newRubyTbl,i)
 			tmpSylText = ""
 			tmpSylKDur = 0
 		end
+		-- aegisub.debug.out('\n'..newKaraText)
 	end
 	return newKaraText
 end
