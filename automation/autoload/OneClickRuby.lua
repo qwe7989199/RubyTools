@@ -43,7 +43,7 @@ function oneClickRuby(subtitles, selected_lines)
 		if string.find(orgText,"{\\[kK]%d+}") then
 			aegisub.debug.out("Process line "..lineNum.." as a karaoke line.\n")
 			lineKara = {}
-			for kDur,sylText in string.gmatch(orgText,"{\\k(%d+)}([^{]+)") do
+			for kDur,sylText in string.gmatch(orgText,"{\\[kK](%d+)}([^{]+)") do
 				lineKara[#lineKara+1] = {sylText=sylText,kDur=kDur}
 			end
 			aegisub.progress.task("Requesting for line: "..lineNum)
