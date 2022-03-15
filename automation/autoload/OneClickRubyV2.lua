@@ -184,6 +184,7 @@ end
 local function json2LineText(jsonStr,lineNum)
 	lineText = ""
 	-- json error handle
+	if json.decode(jsonStr).error then return "" end
 	wordTbl = json.decode(jsonStr).result.word
 	if wordTbl.furigana and wordTbl.furigana~=wordTbl.surface and string.byte(wordTbl.surface)~=227 then
 		if wordTbl.subword then
