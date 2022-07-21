@@ -13,14 +13,15 @@ local json = require"json"
 -- local tts = Y.table.tostring
 meta = nil;
 styles = nil;
---參數設定--
-rubypadding = 0 --小字間距
-rubyscale = 0.5 --小字縮放比例
 
---分隔符设定
-char_s = "##"
-char_m = "|<"
-char_e = "##"
+--Typesetting Parameters--
+rubypadding = 0 --extra spacing of ruby chars
+rubyscale = 0.5 --scale of ruby chars 
+
+--Separators--
+char_s = "##"  -- s(tart) of ruby part
+char_m = "|<"  -- m(iddle) which divides the whole part into kanji and furigana
+char_e = "##"  -- e(nd) of ruby part
 
 local function deleteEmpty(tbl)
 	for i=#tbl,1,-1 do
@@ -284,4 +285,4 @@ function oneClickRuby(subtitles, selected_lines)
 	aegisub.debug.out("Done.")
 end
 
-aegisub.register_macro("文本工具/"..script_name, script_description, oneClickRuby)
+aegisub.register_macro(script_name, script_description, oneClickRuby)
