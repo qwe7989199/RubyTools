@@ -10,7 +10,8 @@ With karaoke support.
   
 ## Requirements(Included)    
  - luajit-request  
-  https://github.com/LPGhatguy/luajit-request   
+  https://github.com/LPGhatguy/luajit-request  
+  **NOTE:**  You need a 64bit **_libcurl.dll_** for corresponding Aegisub.  
  - json (for v2)  
   https://github.com/rxi/json.lua
  - utf8.lua  
