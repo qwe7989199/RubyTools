@@ -1,7 +1,7 @@
 # RubyTools
 Generate and add ruby in Aegisub.   
-With karaoke support.
-
+With karaoke support.  
+[Chinese Ver(中文说明)](README_zh_CN.md)
 ## Usage  
 - Clone this repository.  
 - Unzip all the files to the root folder of Aegisub.  
