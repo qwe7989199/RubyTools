@@ -11,6 +11,7 @@
 ## 依赖(部分已包含于本仓库)    
  - luajit-request  
   https://github.com/LPGhatguy/luajit-request   
+  **注意：** 你需要自行寻找64位版本的 **_libcurl.dll_** 来在对应版本的 Aegisub 中使用本工具。  
  - json (v2版)  
   https://github.com/rxi/json.lua
  - utf8.lua  
