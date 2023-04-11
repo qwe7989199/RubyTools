@@ -2,7 +2,7 @@ script_name = "One Click Ruby"
 script_description = "Get the formatted lyrics by Yahoo's API and ruby them"
 script_author = "domo"
 ruby_part_from = "Kage Maboroshi&KiNen"
-script_version = "2.0"
+script_version = "2.1"
 
 require "karaskel"
 local request = require("luajit-request")
@@ -187,7 +187,7 @@ local function json2LineText(jsonStr,lineNum)
 	-- json error handle
 	if json.decode(jsonStr).error then return "" end
 	wordTbl = json.decode(jsonStr).result.word
-	if wordTbl.furigana and wordTbl.furigana~=wordTbl.surface and string.byte(wordTbl.surface)~=227 then
+	if wordTbl.furigana and wordTbl.furigana~=wordTbl.surface then
 		if wordTbl.subword then
 			subTbl = wordTbl.subword
 			for i=1,#subTbl do
@@ -202,7 +202,7 @@ local function json2LineText(jsonStr,lineNum)
 		end
 	else
 		for i=1,#wordTbl do
-			if wordTbl[i].furigana and wordTbl[i].furigana~=wordTbl[i].surface and string.byte(wordTbl[i].surface)~=227 then
+			if wordTbl[i].furigana and wordTbl[i].furigana~=wordTbl[i].surface then
 				if wordTbl[i].subword then 
 					subTbl = wordTbl[i].subword
 					for i=1,#subTbl do
