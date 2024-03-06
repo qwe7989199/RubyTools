@@ -2,7 +2,7 @@ script_name = "One Click Ruby"
 script_description = "Get the formatted lyrics by Yahoo's API and ruby them"
 script_author = "domo"
 ruby_part_from = "Kage Maboroshi&KiNen"
-script_version = "2.1"
+script_version = "2.2"
 
 require "karaskel"
 local request = require("luajit-request")
@@ -13,7 +13,6 @@ local json = require"json"
 -- local tts = Y.table.tostring
 meta = nil;
 styles = nil;
-
 --Typesetting Parameters--
 rubypadding = 0 --extra spacing of ruby chars
 rubyscale = 0.5 --scale of ruby chars 
@@ -22,6 +21,7 @@ rubyscale = 0.5 --scale of ruby chars
 char_s = "##"  -- s(tart) of ruby part
 char_m = "|<"  -- m(iddle) which divides the whole part into kanji and furigana
 char_e = "##"  -- e(nd) of ruby part
+
 
 local function deleteEmpty(tbl)
 	for i=#tbl,1,-1 do
@@ -49,6 +49,29 @@ function Split(szFullString, szSeparator)
 return nSplitArray
 end
 
+function addK0BeforeText(s)
+    local result = ""
+    local i = 1
+    while i <= utf8.len(s) do
+        local charC = utf8.sub(s, i, i)
+        if charC == "{" then
+            local j = i
+            while utf8.sub(s, j, j) ~= "}" and j <= utf8.len(s) do
+                j = j + 1
+            end
+            result = result .. utf8.sub(s, i, j)
+            i = j + 1
+        else
+            if i == 1 or utf8.sub(s, i-1, i-1) ~= "}" then
+                result = result .. "{\\k0}"
+            end
+            result = result .. charC
+            i = i + 1
+        end
+    end
+    return result
+end
+
 local function send2YahooV2(sentence,appid,grade)
 	local url = "https://jlp.yahooapis.jp/FuriganaService/V2/furigana"
 	params = {["q"] = sentence,
@@ -64,6 +87,7 @@ local function send2YahooV2(sentence,appid,grade)
 		data = json.encode(data)}
 		)
 	if (not result) then aegisub.debug.out(err, message) end
+	-- aegisub.debug.out(result.body)
 	return result.body
 end
 
@@ -140,7 +164,7 @@ local function processline(subs,line,li)
 			line.text = string.gsub(line.text,"%((.-),(.-)%)",ktag.."%1".."|".."%2"..ktag);
 		elseif (char_s == "" and char_m == "(" and char_e == ")") then
 			line.text = string.gsub(line.text,"(^[ぁ-ゖ]+)%(([ぁ-ゖ]+)%)^[ぁ-ゖ]+",ktag.."%1".."|".."%2"..ktag);
-			aegisub.debug.out(line.text)
+			-- aegisub.debug.out(line.text)
 		else
 			line.text = string.gsub(line.text,char_s.."(.-)"..char_m.."(.-)"..char_e,ktag.."%1".."|".."%2"..ktag);
 		end
@@ -186,6 +210,7 @@ local function json2LineText(jsonStr,lineNum)
 	lineText = ""
 	-- json error handle
 	if json.decode(jsonStr).error then return "" end
+				-- aegisub.debug.out(jsonStr)
 	wordTbl = json.decode(jsonStr).result.word
 	if wordTbl.furigana and wordTbl.furigana~=wordTbl.surface then
 		if wordTbl.subword then
@@ -200,7 +225,7 @@ local function json2LineText(jsonStr,lineNum)
 		else
 			lineText = lineText..char_s..wordTbl.surface..char_m..wordTbl.furigana..char_e
 		end
-	else
+	else --Multiple Words
 		for i=1,#wordTbl do
 			if wordTbl[i].furigana and wordTbl[i].furigana~=wordTbl[i].surface then
 				if wordTbl[i].subword then 
@@ -237,7 +262,11 @@ function oneClickRuby(subtitles, selected_lines)
 	for i=1,#selected_lines do
 		lineNum = tostring(selected_lines[i]-dialogue_start)
 		l = subtitles[selected_lines[i]]
-		orgText = l.text			
+		orgText = addK0BeforeText(l.text)
+		if orgText~=l.text then 
+			aegisub.debug.out("[WARNING] {\\k0} was generated for syllable with multiple characters.\n")
+		end
+		-- aegisub.debug.out(orgText)
 		l.comment = true
 		subtitles[selected_lines[i]] = l
 		text = orgText:gsub("{[^}]+}", "")
