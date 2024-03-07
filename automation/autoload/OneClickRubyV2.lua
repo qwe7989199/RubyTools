@@ -262,16 +262,17 @@ function oneClickRuby(subtitles, selected_lines)
 	for i=1,#selected_lines do
 		lineNum = tostring(selected_lines[i]-dialogue_start)
 		l = subtitles[selected_lines[i]]
-		orgText = addK0BeforeText(l.text)
-		if orgText~=l.text then 
-			aegisub.debug.out("[WARNING] {\\k0} was generated for syllable with multiple characters.\n")
-		end
+		orgText = l.text
 		-- aegisub.debug.out(orgText)
 		l.comment = true
 		subtitles[selected_lines[i]] = l
 		text = orgText:gsub("{[^}]+}", "")
 		if string.find(orgText,"{\\[kK]%d+}") then
 			aegisub.debug.out("Process line "..lineNum.." as a karaoke line.\n")
+			orgText = addK0BeforeText(l.text)
+			if orgText~=l.text then 
+				aegisub.debug.out("[WARNING] {\\k0} was generated for syllable with multiple characters.\n")
+			end
 			lineKara = {}
 			for kDur,sylText in string.gmatch(orgText,"{\\[kK](%d+)}([^{]+)") do
 				lineKara[#lineKara+1] = {sylText=sylText,kDur=kDur}
