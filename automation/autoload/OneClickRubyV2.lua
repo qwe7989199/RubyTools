@@ -73,7 +73,8 @@ function addK0BeforeText(s)
 end
 
 local function send2YahooV2(sentence,appid,grade)
-	local url = "https://jlp.yahooapis.jp/FuriganaService/V2/furigana"
+	local url = "https://jlp.yahooapis.jp/FuriganaService/V2/furigana" -- For those who can access yahoo jp directly
+	-- local url = "https://furigana.qwe7989199.workers.dev/" -- As a workaround for those who live in the EU (Not Stable)
 	params = {["q"] = sentence,
 			  ["grade"] = grade}
 	data = {["id"] = "1234-1",
@@ -82,7 +83,7 @@ local function send2YahooV2(sentence,appid,grade)
 			["params"] = params}
 	local result, err, message = request.send(url,{
 		method = "POST",
-		headers = {['content-type'] = "application/x-www-form-urlencoded",
+		headers = {['content-type'] = "application/json",
 				   ["User-Agent"] = "Yahoo AppID: " .. appid},
 		data = json.encode(data)}
 		)
