@@ -2,7 +2,7 @@ script_name = "One Click Ruby"
 script_description = "Get the formatted lyrics by Yahoo's API and ruby them"
 script_author = "domo"
 ruby_part_from = "Kage Maboroshi&KiNen"
-script_version = "2.2"
+script_version = "2.3"
 
 require "karaskel"
 local request = require("luajit-request")
@@ -30,6 +30,10 @@ local function deleteEmpty(tbl)
 		end
 	end
 	return tbl
+end
+
+local function isKatakana(s)
+    return utf8.match(s, "^[\227\130\128-\227\131\191]+$") ~= nil
 end
 
 function Split(szFullString, szSeparator)
@@ -213,7 +217,7 @@ local function json2LineText(jsonStr,lineNum)
 	if json.decode(jsonStr).error then return "" end
 				-- aegisub.debug.out(jsonStr)
 	wordTbl = json.decode(jsonStr).result.word
-	if wordTbl.furigana and wordTbl.furigana~=wordTbl.surface then
+	if wordTbl.furigana and wordTbl.furigana~=wordTbl.surface and not isKatakana(wordTbl.surface) then
 		if wordTbl.subword then
 			subTbl = wordTbl.subword
 			for i=1,#subTbl do
@@ -228,7 +232,7 @@ local function json2LineText(jsonStr,lineNum)
 		end
 	else --Multiple Words
 		for i=1,#wordTbl do
-			if wordTbl[i].furigana and wordTbl[i].furigana~=wordTbl[i].surface then
+			if wordTbl[i].furigana and wordTbl[i].furigana~=wordTbl[i].surface and not isKatakana(wordTbl[i].surface) then
 				if wordTbl[i].subword then 
 					subTbl = wordTbl[i].subword
 					for i=1,#subTbl do
